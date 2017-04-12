@@ -18,7 +18,7 @@ class Client {
         while(true){
             send = inFromUser.readLine();
             outToServer.writeBytes(send + '\n');
-            rec= inFromServer.readLine();
+            rec = inFromServer.readLine();
             System.out.println("FROM SERVER: " + rec);
             if(rec.equals("END")) {
                 clientSocket.close();
