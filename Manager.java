@@ -31,6 +31,7 @@ class Manager {
             if (match(file.getName(), filename))
                 results += file + ",";
 
+        System.out.println("WTF");
         if (results.length() > 0)
             return "FOUND: " + results.substring(0, results.length() - 1);;
         return "NOT FOUND";
@@ -48,15 +49,17 @@ class Manager {
             for (int j = 0; j < atokens.length; j++)
                 if (btokens[i].equals(atokens[j])) {
                     counter++;
+                    System.out.println(counter);
                     break;
                 }
+
         return (counter == btokens.length);
     }
 
     public String toString() {
         String message = "";
         for (FailMailFile f : files)
-            message += f + "\n";
+            message += f + ",";
         return message;
     }
 }

@@ -4,14 +4,15 @@ import java.net.*;
 
 class Server {
     static ServerSocket welcomeSocket;
+    static Manager manager;
+
     public static void main(String argv[]) throws Exception
     {
-        welcomeSocket = new ServerSocket(6789);
-
+        manager = new Manager();
+        welcomeSocket = new ServerSocket(8888);
         for (;;) {
             Socket socket = welcomeSocket.accept();
-            new Handler(socket).start();
+            new Handler(socket, manager).start();
         }
-
     }
 }
