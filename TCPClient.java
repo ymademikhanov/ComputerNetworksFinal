@@ -13,10 +13,9 @@ class TCPClient {
     public static void main(String argv[]) throws Exception
     {
 
-
-        new ClientServerHandler().start();
         ServerSocket welcomeSocket = new ServerSocket(0);
         port = welcomeSocket.getLocalPort();
+        new ClientServerHandler().start();
 
         for (;;) {
             Socket socket = welcomeSocket.accept();
