@@ -118,7 +118,7 @@ class ClientServerHandler extends Thread {
 
         try {
             writeResponse(outToServer, response);
-            showTable(response);
+            //showTable(response); // DEBUG
         } catch (Exception e) {
             System.out.println(e);
         }
@@ -126,10 +126,10 @@ class ClientServerHandler extends Thread {
     }
 
     public void showTable(String information2) {
-        //        if(!s.substring(0, 5).equals("FOUND")) {
-//            System.out.println(s);
-//            return;
-//        }
+        if(!information2.substring(0, 5).equals("FOUND")) {
+            System.out.println(information2);
+            return;
+        }
 
         System.out.println("\nFound:");
         String[] toks = information2.split(" ", 2);
@@ -175,6 +175,11 @@ class ClientServerHandler extends Thread {
             String request = "GET " + fileName;
 
             writeResponse(outToPeer, request);
+            // read from user
+            // update listFiles
+            // send ADD file to server
+
+            peerSocket.close();
         } catch(Exception e) {
             System.out.println("Error with downloading file");
         }

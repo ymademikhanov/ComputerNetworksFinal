@@ -16,11 +16,13 @@ class TCPClient {
 
 
         new ClientServerHandler().start();
-        //new ClientPeerHandler().start();
+        ServerSocket welcomeSocket = new ServerSocket(8888);
 
+        for (;;) {
+            Socket socket = welcomeSocket.accept();
+            new ClientPeerHandler(socket).start();
+        }
 
-
-         
 
     }
 }
