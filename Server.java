@@ -13,6 +13,8 @@ class Server {
 
     public static void main(String argv[]) throws Exception {
         welcomeSocket = new ServerSocket(8888);
+        manager = new Manager();
+
         System.out.println("Server runs at " + InetAddress.getLocalHost().getHostAddress());
         for (;;) {
             Socket socket = welcomeSocket.accept();
