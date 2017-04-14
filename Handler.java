@@ -33,7 +33,7 @@ class Handler extends Thread {
 
             while (true) {
                 try{
-                    String[] tokens = inFromClient.readLine().split(" ");
+                    String[] tokens = inFromClient.readLine().split(" ", 2);
                     if (tokens[0].equals("SEARCH:")) {
                         System.out.println("IN");
                         cap = manager.search(tokens[1]) + "\n";
