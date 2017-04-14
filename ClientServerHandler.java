@@ -142,7 +142,7 @@ class ClientServerHandler extends Thread {
         String information = toks[1];
 
         String header = String.format("%-40s %-20s %-10s", "Name", "Last Modified", "Size");
-        System.out.println(header + '\n');
+        System.out.println(header);
 
         found.clear();
 
