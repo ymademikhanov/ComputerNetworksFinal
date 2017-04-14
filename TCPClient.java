@@ -5,8 +5,6 @@ import java.net.*;
 class TCPClient {
 
     private static Socket clientSocket;
-    private static DataOutputStream outToServer;
-    private static BufferedReader inFromServer;
 
     public static String serverIP;
     public static int port;
@@ -17,7 +15,7 @@ class TCPClient {
 
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
         System.out.println("Please, write IP address of server:");
-        serverIP = inFromServer.readLine();
+        serverIP = inFromUser.readLine();
 
 
         ServerSocket welcomeSocket = new ServerSocket(0);
