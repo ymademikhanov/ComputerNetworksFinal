@@ -9,9 +9,12 @@ class Handler extends Thread {
     private DataOutputStream  outToClient;
     private Manager manager;
 
+    private String ipaddress;
+
     Handler(Socket connectionSocket, Manager manager) {
         this.connectionSocket = connectionSocket;
         this.manager = manager;
+        this.ipaddress = "";
     }
 
     @Override
@@ -33,18 +36,24 @@ class Handler extends Thread {
 
             while (true) {
                 try{
-                    String[] tokens = inFromClient.readLine().split(" ", 2);
-                    if (tokens[0].equals("SEARCH:")) {
-                        System.out.println("IN");
-                        cap = manager.search(tokens[1]) + "\n";
-                    }   else
-                    if (tokens[0].equals("ADD")) {
-                        manager.addFilesFromUser(tokens[1]);
-                        cap = "ADDED\n";
-                    }
-                    outToClient.writeBytes(cap);
-                    if (cap.equals("END"))
+                    String tin = inFromClient.readLine();
+                    if (tin.equals("BYE")) {
+                        outToClient.writeBytes("BYE\n");
                         connectionSocket.close();
+                        manager.delete(ipaddress);
+                        System.out.println(manager.toString());
+                    } else {
+                        String[] tokens = tin.split(" ", 2);
+                        if (tokens[0].equals("SEARCH:")) {
+                            System.out.println("IN");
+                            cap = manager.search(tokens[1]) + "\n";
+                        }   else
+                        if (tokens[0].equals("ADD")) {
+                            ipaddress = manager.addFilesFromUser(tokens[1]);
+                            cap = "ADDED\n";
+                        }
+                        outToClient.writeBytes(cap);
+                    }
                 } catch(Exception e) {  break;  }
             }
         }

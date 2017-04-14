@@ -20,7 +20,7 @@ class Client {
             outToServer.writeBytes(send + '\n');
             rec = inFromServer.readLine();
             System.out.println("FROM SERVER: " + rec);
-            if(rec.equals("END")) {
+            if(rec.equals("BYE")) {
                 clientSocket.close();
                 break;
             }

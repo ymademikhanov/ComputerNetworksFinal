@@ -1,10 +1,10 @@
-if [ $1 == "run" ]; then
+if [ $1 == "r" ]; then
 	ls *.java
 	javac *.java
 	clear
 	echo "############ Output ###########"
 	java Test
-elif [ $1 = "compile" ]; then
+elif [ $1 = "c" ]; then
 	ls *.java
 	clear
 	javac *.java
