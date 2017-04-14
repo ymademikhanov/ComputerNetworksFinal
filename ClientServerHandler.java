@@ -141,12 +141,13 @@ class ClientServerHandler extends Thread {
         String[] toks = information2.split(" ", 2);
         String information = toks[1];
 
-        String header = String.format("%-40s %-20s %-10s", "Name", "Last Modified", "Size");
+        String header = String.format("%3s %-40s %-20s %-10s", "#", "Name", "Last Modified", "Size");
         System.out.println(header);
 
         found.clear();
 
         String[] tokens = information.split("<");
+        int index = 1;
 
         for (String token : tokens) {
             if (token.length() > 0) {
@@ -159,9 +160,13 @@ class ClientServerHandler extends Thread {
                 String IPAddress = sub[4].trim();
                 int port = Integer.parseInt(sub[5].trim());
 
+//                if(IPAddress.equals(myIP) && port == myPort)
+//                        continue;
+
                 found.add(new FailMailFile(name, type, size, lastModifiedDate, IPAddress, port));
-                String item = String.format("%-40s %-20s %-10s", name + "." + type, lastModifiedDate, size);
+                String item = String.format("%3d %-40s %-20s %-10s", index, name + "." + type, lastModifiedDate, size);
                 System.out.println(item);
+                index++;
             }
         }
         System.out.println();
@@ -172,6 +177,8 @@ class ClientServerHandler extends Thread {
         String fileName = selected.getName() + '.' + selected.getType();
         String ip = selected.getIPAddress();
         int port = selected.getPort();
+
+   //     System.out.println(ip +  ": " + port);
 
         try {
             Socket peerSocket = new Socket(ip, port);
@@ -212,7 +219,7 @@ class ClientServerHandler extends Thread {
         sendInfo();
 
         System.out.println("Manual:");
-        System.out.println("    SEARCH:             -- to get list of accessible files or update current one");
+        System.out.println("    search:             -- to get list of accessible files or update current one");
         System.out.println("    download: <row>     -- to download file on <row> row");
         System.out.println("    bye                 -- to close application\n");
 
@@ -224,7 +231,16 @@ class ClientServerHandler extends Thread {
                 command = inFromUser.readLine();
 
             if(command.length() >= 7 && command.substring(0, 7).equals("SEARCH:")) {
-                writeResponse(outToServer, command);
+                System.out.println("SEARCH: " + command.substring(8));
+                if(command.length() < 8) {
+                    writeResponse(outToServer, "SEARCH: ALL");
+                    System.out.println("!");
+                }
+                else {
+                    //System.out.println("SEARCH: " + command.substring(8));
+                    //writeResponse(outToServer, "SEARCH: " + command.substring(8));
+                    writeResponse(outToServer, command);
+                }
                 showTable(inFromServer.readLine());
             }
             else if(command.length() >= 9 && command.substring(0, 9).equals("download:")) {
