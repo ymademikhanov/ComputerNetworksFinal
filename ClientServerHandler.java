@@ -21,11 +21,11 @@ class ClientServerHandler extends Thread {
     ClientServerHandler() {
     }
 
-    public void writeResponse(String s) {
+    public void writeResponse(DataOutputStream  outTo, String s) {
         s += "\n";
         try {
-            outToServer.write(s.getBytes());
-            outToServer.flush();
+            outTo.write(s.getBytes());
+            outTo.flush();
         } catch(Exception e) {}
     }
 
@@ -90,7 +90,7 @@ class ClientServerHandler extends Thread {
 
     public void connect() {
         try {
-            writeResponse("HELLO");
+            writeResponse(outToServer, "HELLO");
 
             String protocol = inFromServer.readLine();
             if (protocol.equals("HI")) {
@@ -117,7 +117,7 @@ class ClientServerHandler extends Thread {
             response += item;
 
         try {
-            writeResponse(response);
+            writeResponse(outToServer, response);
             showTable(response);
         } catch (Exception e) {
             System.out.println(e);
@@ -125,66 +125,59 @@ class ClientServerHandler extends Thread {
 
     }
 
-    public void showTable(String s) {
-//        if(!s.substring(0, 5).equals("FOUND")) {
+    public void showTable(String information2) {
+        //        if(!s.substring(0, 5).equals("FOUND")) {
 //            System.out.println(s);
 //            return;
 //        }
+
         System.out.println("\nFound:");
+        String[] toks = information2.split(" ", 2);
+        String information = toks[1];
 
         String header = String.format("%-40s %-20s %-10s", "Name", "Last Modified", "Size");
-        System.out.println(header);
+        System.out.println(header + '\n');
 
         found.clear();
-        String name = "";
-        String type = "";
-        String date = "";
-        String size = "";
-        String ip = "";
-        String port = "";
 
-        int start = 0;
-        int cnt = 0;
+        String[] tokens = information.split("<");
 
-        for(int i = 0; i < s.length(); i++) {
-            char x = s.charAt(i);
-            if(x == '<') {
-                start = 1;
-            }
-            else if(x == '>') {
-                String item = String.format("%-40s %-20s %-10s", name + "." + type, date, size);
+        for (String token : tokens) {
+            if (token.length() > 0) {
+                String[] sub = token.split("[,>\n]+");
+
+                String name = sub[0].trim();
+                String type = sub[1].trim();
+                int size = Integer.parseInt(sub[2].trim());
+                String lastModifiedDate = sub[3].trim();
+                String IPAddress = sub[4].trim();
+                int port = Integer.parseInt(sub[5].trim());
+
+                found.add(new FailMailFile(name, type, size, lastModifiedDate, IPAddress, port));
+                String item = String.format("%-40s %-20s %-10s", name + "." + type, lastModifiedDate, size);
                 System.out.println(item);
-                FailMailFile f = new FailMailFile(name, type, Integer.ParseInt(size), date, ip, Integer.ParseInt(port));
-
-                name = type = date = size = ip = port = "";
-                start = 0;
-                cnt = 0;
-            }
-            else if(x == ',') {
-                cnt++;
-            }
-            else {
-                if(start == 1) {
-                    if(cnt == 0)
-                        name += x;
-                    if(cnt == 1)
-                        type += x;
-                    if(cnt == 2)
-                        size += x;
-                    if(cnt == 3)
-                        date += x;
-                    if(cnt == 4)
-                        ip += x;
-                    if(cnt == 5)
-                        port += x;
-                }
             }
         }
         System.out.println();
     }
 
     public void download(int row) {
-        // TO-DO
+        FailMailFile selected = found.get(row);
+        String fileName = selected.getName() + '.' + selected.getType();
+        String ip = selected.getIPAddress();
+        int port = selected.getPort();
+
+        try {
+            Socket peerSocket = new Socket(ip, port);
+            BufferedReader inFromPeer = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
+            DataOutputStream outToPeer = new DataOutputStream(peerSocket.getOutputStream());
+
+            String request = "GET " + fileName;
+
+            writeResponse(outToPeer, request);
+        } catch(Exception e) {
+            System.out.println("Error with downloading file");
+        }
     }
 
 
@@ -219,7 +212,7 @@ class ClientServerHandler extends Thread {
                 command = inFromUser.readLine();
 
             if(command.substring(0, 6).equals("SEARCH:")) {
-                writeResponse(command);
+                writeResponse(outToServer, command);
                 showTable(inFromServer.readLine());
             }
             else if(command.substring(0, 9).equals("download:")) {

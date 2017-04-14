@@ -1,5 +1,6 @@
 class FailMailFile {
-    private String name, type;
+    private String name;
+    private String type;
     private int size;
     private String lastModifiedDate, IPAddress;
     private int port;
@@ -28,7 +29,13 @@ class FailMailFile {
         return name;
     }
 
+    public String getType() {
+        return type;
+    }
     public String getIPAddress() {
         return IPAddress;
+    }
+    public int getPort() {
+        return port;
     }
 }
