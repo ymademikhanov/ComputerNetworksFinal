@@ -27,4 +27,8 @@ class FailMailFile {
     public String getName() {
         return name;
     }
+
+    public String getIPAddress() {
+        return IPAddress;
+    }
 }
