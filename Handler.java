@@ -45,7 +45,10 @@ class Handler extends Thread {
                     } else {
                         String[] tokens = tin.split(" ", 2);
                         if (tokens[0].equals("SEARCH:")) {
-                            cap = manager.search(tokens[1]) + "\n";
+                            if (tokens[1].toLowerCase().equals("all")) {
+                                cap = "FOUND: " + manager + "\n";
+                            } else
+                                cap = manager.search(tokens[1]) + "\n";
                             outToClient.writeBytes(cap);
                         }   else
                         if (tokens[0].equals("ADD")) {
