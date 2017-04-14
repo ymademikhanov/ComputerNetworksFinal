@@ -47,12 +47,12 @@ class Handler extends Thread {
                         if (tokens[0].equals("SEARCH:")) {
                             System.out.println("IN");
                             cap = manager.search(tokens[1]) + "\n";
+                            outToClient.writeBytes(cap);
                         }   else
                         if (tokens[0].equals("ADD")) {
                             ipaddress = manager.addFilesFromUser(tokens[1]);
                             cap = "ADDED\n";
                         }
-                        outToClient.writeBytes(cap);
                     }
                 } catch(Exception e) {  break;  }
             }

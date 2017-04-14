@@ -8,15 +8,15 @@ class TCPClient {
     private static DataOutputStream outToServer;
     private static BufferedReader inFromServer;
 
-    //private find(String fileName);
-    //private download(Selected);
+    public static int port;
 
     public static void main(String argv[]) throws Exception
     {
 
 
         new ClientServerHandler().start();
-        ServerSocket welcomeSocket = new ServerSocket(8888);
+        ServerSocket welcomeSocket = new ServerSocket(0);
+        port = welcomeSocket.getLocalPort();
 
         for (;;) {
             Socket socket = welcomeSocket.accept();
