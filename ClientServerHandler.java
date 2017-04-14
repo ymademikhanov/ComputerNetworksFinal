@@ -22,8 +22,9 @@ class ClientServerHandler extends Thread {
         try {
             myIP = InetAddress.getLocalHost().getHostAddress();
             myPort = TCPClient.port;
+            System.out.println("Client started at " + myIP + ":" + myPort + "\n");
 
-            connectionSocket = new Socket("localhost", 8888);
+            connectionSocket = new Socket(TCPClient.serverIP, 8888);
             outToServer = new DataOutputStream(connectionSocket.getOutputStream());
             inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
         } catch(Exception e) {
@@ -161,8 +162,8 @@ class ClientServerHandler extends Thread {
                 String IPAddress = sub[4].trim();
                 int port = Integer.parseInt(sub[5].trim());
 
-//                if(IPAddress.equals(myIP) && port == myPort)
-//                        continue;
+                if(IPAddress.equals(myIP) && port == myPort)
+                    continue;
 
                 found.add(new FailMailFile(name, type, size, lastModifiedDate, IPAddress, port));
                 String item = String.format("%3d %-40s %-20s %-10s", index, name + "." + type, lastModifiedDate, size);
@@ -174,12 +175,13 @@ class ClientServerHandler extends Thread {
     }
 
     public void download(int row) {
+        row--;
         FailMailFile selected = found.get(row);
         String fileName = selected.getName() + '.' + selected.getType();
         String ip = selected.getIPAddress();
         int port = selected.getPort();
 
-   //     System.out.println(ip +  ": " + port);
+        System.out.println("Downloading from " + ip + ":" + port + "\n");
 
         try {
             Socket peerSocket = new Socket(ip, port);
@@ -189,16 +191,22 @@ class ClientServerHandler extends Thread {
             String request = "GET " + fileName;
 
             writeResponse(outToPeer, request);
-            String data = inFromPeer.readLine();
-
             // creating new file
-            File file = new File("./share/" + fileName);
+            File file = new File("./share/g" + fileName);
             file.getParentFile().mkdirs();
             file.createNewFile();
 
-            PrintWriter writer = new PrintWriter("./share/" + fileName, "UTF-8");
-            writer.println(data);
+            PrintWriter writer = new PrintWriter("./share/g" + fileName, "UTF-8");
+
+            while(true) {
+                String data = inFromPeer.readLine();
+                if(data == null) {
+                    break;
+                }
+                writer.println(data);
+            }
             writer.close();
+            System.out.println("File uploaded.");
 
             //adding file to list and sending to server
             addFileToList(file);

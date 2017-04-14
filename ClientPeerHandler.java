@@ -38,9 +38,13 @@ class ClientPeerHandler extends Thread {
             for(FailMailFile x: ClientServerHandler.listFiles) {
                 String name = x.getName() + '.' + x.getType();
                 if(fileName.equals(name)) {
-                    File file = new File("./share" + fileName);
+                    System.out.println("Send:" + name);
+
+                    File file = new File("./share/" + fileName);
                     String content = new String(Files.readAllBytes(file.toPath()));
-                    writeResponse(content);
+
+                    outToPeer.writeBytes(content + "\r\n");
+                    outToPeer.flush();
                     break;
                 }
             }
