@@ -19,6 +19,7 @@ class Handler extends Thread {
 
     @Override
     public void run() {
+
         try {
             inFromUser = new BufferedReader(new InputStreamReader(System.in));
             inFromClient = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
@@ -41,11 +42,9 @@ class Handler extends Thread {
                         outToClient.writeBytes("BYE\n");
                         connectionSocket.close();
                         manager.delete(ipaddress);
-                        System.out.println(manager.toString());
                     } else {
                         String[] tokens = tin.split(" ", 2);
                         if (tokens[0].equals("SEARCH:")) {
-                            System.out.println("IN");
                             cap = manager.search(tokens[1]) + "\n";
                         }   else
                         if (tokens[0].equals("ADD")) {
