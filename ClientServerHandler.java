@@ -10,15 +10,26 @@ class ClientServerHandler extends Thread {
     private Socket connectionSocket;
     private BufferedReader inFromUser, inFromServer;
     private DataOutputStream  outToServer;
-    private List<FailMailFile> listFiles = new ArrayList<FailMailFile>();
+    public static List<FailMailFile> listFiles = new ArrayList<FailMailFile>();
     private List<FailMailFile> found = new ArrayList<FailMailFile>();
 
     private String myIP;
-    private final int myPort = 8888;
+    private int myPort;
 
 
 
     ClientServerHandler() {
+        try {
+            myIP = InetAddress.getLocalHost().getHostAddress();
+            myPort = TCPClient.port;
+
+            connectionSocket = new Socket("localhost", 8888);
+            outToServer = new DataOutputStream(connectionSocket.getOutputStream());
+            inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+        } catch(Exception e) {
+            System.out.println("Client-server error. " + e.getMessage());
+        }
+
     }
 
     public void writeResponse(DataOutputStream  outTo, String s) {
@@ -69,21 +80,26 @@ class ClientServerHandler extends Thread {
         return str.substring(i + 1);
     }
 
+    public void addFileToList(File fileEntry) {
+        SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
+
+        String file = fileEntry.getName();
+        String fileName = getFileName(file);
+        String fileExt = getFileExt(file);
+        long size = fileEntry.length();
+        String date = sdf.format(fileEntry.lastModified());
+
+        FailMailFile item = new FailMailFile(fileName, fileExt,  (int)size, date, myIP, myPort);
+        listFiles.add(item);
+        writeResponse(outToServer, "ADD " + item);
+    }
+
     public void listFilesForFolder(final File folder) throws Exception{
         for (final File fileEntry : folder.listFiles()) {
             if (fileEntry.isDirectory()) {
                 listFilesForFolder(fileEntry);
             } else {
-                SimpleDateFormat sdf = new SimpleDateFormat("MM/dd/yyyy HH:mm:ss");
-                String file = fileEntry.getName();
-                String fileName = getFileName(file);
-                String fileExt = getFileExt(file);
-                long size = fileEntry.length();
-                String date = sdf.format(fileEntry.lastModified());
-
-                FailMailFile item = new FailMailFile(fileName, fileExt,  (int)size, date, myIP, myPort);
-                listFiles.add(item);
-
+                addFileToList(fileEntry);
             }
         }
     }
@@ -103,7 +119,6 @@ class ClientServerHandler extends Thread {
     }
 
     public void sendInfo() {
-        String response = "ADD ";
 
         final File folder = new File("./share");
 
@@ -112,15 +127,6 @@ class ClientServerHandler extends Thread {
 
         }catch (Exception e) {
             System.out.println(e.getMessage());
-        }
-        for(FailMailFile item: listFiles)
-            response += item;
-
-        try {
-            writeResponse(outToServer, response);
-            //showTable(response); // DEBUG
-        } catch (Exception e) {
-            System.out.println(e);
         }
 
     }
@@ -175,9 +181,20 @@ class ClientServerHandler extends Thread {
             String request = "GET " + fileName;
 
             writeResponse(outToPeer, request);
-            // read from user
-            // update listFiles
-            // send ADD file to server
+            String data = inFromPeer.readLine();
+
+            // creating new file
+            File file = new File("./share/" + fileName);
+            file.getParentFile().mkdirs();
+            file.createNewFile();
+
+            PrintWriter writer = new PrintWriter("./share/" + fileName, "UTF-8");
+            writer.println(data);
+            writer.close();
+
+            //adding file to list and sending to server
+            addFileToList(file);
+
 
             peerSocket.close();
         } catch(Exception e) {
@@ -191,23 +208,13 @@ class ClientServerHandler extends Thread {
 
         BufferedReader inFromUser = new BufferedReader(new InputStreamReader(System.in));
 
-        try {
-            myIP = InetAddress.getLocalHost().getHostAddress();
-
-            connectionSocket = new Socket("localhost", 8888);
-            outToServer = new DataOutputStream(connectionSocket.getOutputStream());
-            inFromServer = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-
-        }
-
-        //connect();
+        connect();
         sendInfo();
 
         System.out.println("Manual:");
         System.out.println("    SEARCH:             -- to get list of accessible files or update current one");
-        System.out.println("    download: <row>     -- to download file on <row> row\n");
+        System.out.println("    download: <row>     -- to download file on <row> row");
+        System.out.println("    bye                 -- to close application\n");
 
         while(true) {
             String command = "";
@@ -216,11 +223,11 @@ class ClientServerHandler extends Thread {
 
                 command = inFromUser.readLine();
 
-            if(command.substring(0, 6).equals("SEARCH:")) {
+            if(command.length() >= 7 && command.substring(0, 7).equals("SEARCH:")) {
                 writeResponse(outToServer, command);
                 showTable(inFromServer.readLine());
             }
-            else if(command.substring(0, 9).equals("download:")) {
+            else if(command.length() >= 9 && command.substring(0, 9).equals("download:")) {
                 int row = getRow(command);
                 System.out.println(row);
 
@@ -229,6 +236,11 @@ class ClientServerHandler extends Thread {
                 } else {
                     download(row);
                 }
+            }
+            else if(command.length() >= 3 && command.substring(0, 3).equals("bye")) {
+                writeResponse(outToServer, "BYE");
+                connectionSocket.close();
+                break;
             }
             else {
                 System.out.println("Command not found.");

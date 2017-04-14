@@ -46,12 +46,12 @@ class Handler extends Thread {
                         String[] tokens = tin.split(" ", 2);
                         if (tokens[0].equals("SEARCH:")) {
                             cap = manager.search(tokens[1]) + "\n";
+                            outToClient.writeBytes(cap);
                         }   else
                         if (tokens[0].equals("ADD")) {
                             ipaddress = manager.addFilesFromUser(tokens[1]);
                             cap = "ADDED\n";
                         }
-                        outToClient.writeBytes(cap);
                     }
                 } catch(Exception e) {  break;  }
             }
