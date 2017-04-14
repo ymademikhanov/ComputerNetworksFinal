@@ -92,6 +92,7 @@ class ClientServerHandler extends Thread {
         FailMailFile item = new FailMailFile(fileName, fileExt,  (int)size, date, myIP, myPort);
         listFiles.add(item);
         writeResponse(outToServer, "ADD " + item);
+        inFromServer.readLine();
     }
 
     public void listFilesForFolder(final File folder) throws Exception{
@@ -132,6 +133,7 @@ class ClientServerHandler extends Thread {
     }
 
     public void showTable(String information2) {
+        System.out.println("Come");
         if(!information2.substring(0, 5).equals("FOUND")) {
             System.out.println(information2);
             return;
@@ -232,7 +234,7 @@ class ClientServerHandler extends Thread {
 
             if(command.length() >= 7 && command.substring(0, 7).equals("SEARCH:")) {
                 System.out.println("SEARCH: " + command.substring(8));
-                if(command.length() < 8) {
+                if(command.length() <= 8) {
                     writeResponse(outToServer, "SEARCH: ALL");
                     System.out.println("!");
                 }
